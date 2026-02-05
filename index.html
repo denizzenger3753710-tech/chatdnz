@@ -4,115 +4,107 @@
 <meta charset="UTF-8">
 <title>Aptal 🤪 Yapay Zeka</title>
 <style>
-body{
-  margin:0;
-  font-family:Arial,sans-serif;
-  background:linear-gradient(135deg,#1e3c72,#2a5298);
-  height:100vh;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  color:#fff;
-}
-#app{
-  width:90%;
-  max-width:600px;
-  background:#111;
-  border-radius:10px;
-  padding:15px;
-  display:flex;
-  flex-direction:column;
-}
-#messages{
-  flex:1;
-  overflow-y:auto;
-  margin-bottom:10px;
-}
-.msg{margin-bottom:6px}
-.user{color:#4fc3f7}
-.bot{color:#ffb74d}
-input{
-  padding:10px;
-  border:none;
-  border-radius:6px;
-  outline:none;
-}
-.credit{
-  text-align:center;
-  font-size:11px;
-  opacity:.7;
-  margin-top:6px;
-}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#343541;color:#fff;height:100vh;display:flex;justify-content:center;align-items:center}
+#app{width:100%;max-width:900px;height:95vh;background:#444654;border-radius:10px;display:flex;flex-direction:column;overflow:hidden}
+#header{padding:12px;background:#202123;font-weight:bold;text-align:center}
+#messages{flex:1;padding:15px;overflow-y:auto}
+.msg{max-width:80%;margin-bottom:10px;padding:10px;border-radius:8px;line-height:1.4}
+.user{background:#0b93f6;align-self:flex-end}
+.bot{background:#3e3f4b;align-self:flex-start}
+#inputArea{display:flex;padding:10px;background:#202123}
+#input{flex:1;padding:10px;border:none;border-radius:6px;outline:none}
+#send{margin-left:8px;padding:10px 14px;border:none;border-radius:6px;background:#19c37d;color:#000;cursor:pointer}
+#controls{display:flex;gap:10px;padding:8px;background:#202123;font-size:12px}
+.credit{text-align:center;font-size:11px;opacity:.6;padding:5px}
 </style>
 </head>
 <body>
-
 <div id="app">
+  <div id="header">🤪 Aptal Yapay Zeka</div>
   <div id="messages"></div>
-  <input id="input" placeholder="Yaz ve Enter'a bas">
+  <div id="controls">
+    <button onclick="toggleSes()" id="sesBtn">🔊 Ses Açık</button>
+  </div>
+  <div id="inputArea">
+    <input id="input" placeholder="Bir şey yaz…">
+    <button id="send">Gönder</button>
+  </div>
   <div class="credit">Deniz Z tarafından yapıldı</div>
 </div>
 
 <script>
-const messages = document.getElementById("messages");
-const input = document.getElementById("input");
+const messages=document.getElementById('messages');
+const input=document.getElementById('input');
+const send=document.getElementById('send');
 
-// === HAFIZA ===
-let hafiza = JSON.parse(localStorage.getItem("aptal_hafiza")) || [];
+let sesAcik=true;
 
-function kaydet(){
-  localStorage.setItem("aptal_hafiza", JSON.stringify(hafiza));
-}
+const hafiza=JSON.parse(localStorage.getItem('aptal_chat'))||[];
+hafiza.forEach(m=>mesajEkle(m.t,m.x));
 
-function mesajEkle(tur, metin){
-  const d = document.createElement("div");
-  d.className = "msg " + tur;
-  d.innerHTML = (tur==="user"?"Sen: ":"Aptal: ") + metin;
+function kaydet(){localStorage.setItem('aptal_chat',JSON.stringify(hafiza));}
+
+function mesajEkle(t,x){
+  const d=document.createElement('div');
+  d.className='msg '+t;
+  d.innerHTML=x;
   messages.appendChild(d);
-  messages.scrollTop = messages.scrollHeight;
+  messages.scrollTop=messages.scrollHeight;
 }
 
-// === SAYFA AÇILINCA ESKİ MESAJLARI YÜKLE ===
-hafiza.forEach(m => mesajEkle(m.tur, m.metin));
-
-// === SAÇMA AMA ANLAMLI ŞİİR ===
-function sacmaSiir(){
-  const a=["Bir sabah uyandım","Pencere açıktı","Saat bana baktı"];
-  const b=["çünkü simitler düşünüyordu","mantık izin almıştı","kediler konuşuyordu"];
-  const c=["sonra sustuk.","kimse anlamadı.","hayat devam etti."];
-  return a[Math.random()*a.length|0]+"<br>"+
-         b[Math.random()*b.length|0]+"<br>"+
-         c[Math.random()*c.length|0];
+// === DEV KELİME BANKASI (1000+) ===
+const kelimeBankasi=[];
+for(let i=1;i<=1200;i++){
+  kelimeBankasi.push("Bu konu üzerine düşündüm ve sonuç tam olarak netleşmedi #"+i);
 }
 
-// === BEYİN ===
+function rastgeleCevap(){
+  return kelimeBankasi[Math.floor(Math.random()*kelimeBankasi.length)];
+}
+
+function hikayeUret(){
+  return "Bir varmış bir yokmuş. Aslında varmış ama biraz kararsızmış. Günlerden bir gün, bu hikayenin kahramanı düşünmeye başlamış ve düşünürken konuyu kaybetmiş. Yine de hikâye burada bitmemiş, çünkü anlatan kişi hâlâ konuşuyormuş.";
+}
+
 function cevapUret(text){
   text=text.toLowerCase();
-  if(text.includes("şiir yaz")) return sacmaSiir();
-  if(text.includes("hikaye")) return "Bir varmış bir yokmuş… ama ben de emin değilim.";
-  return "Bunu düşündüm ama düşünürken kafam karıştı.";
+  if(text.includes('hikaye')) return hikayeUret();
+  if(text.includes('şiir')) return "Bugün kelimeler sıraya girdi ama anlam biraz geç kaldı.";
+  return rastgeleCevap();
 }
 
-// === ENTER ÇALIŞIYOR ===
-input.addEventListener("keydown", e=>{
-  if(e.key!=="Enter" || !input.value.trim()) return;
+function konus(text){
+  if(!sesAcik||!('speechSynthesis'in window))return;
+  const u=new SpeechSynthesisUtterance(text.replace(/<[^>]*>/g,''));
+  u.lang='tr-TR';
+  u.rate=0.95;u.pitch=1;
+  speechSynthesis.cancel();speechSynthesis.speak(u);
+}
 
-  const text = input.value;
-  input.value="";
+function toggleSes(){
+  sesAcik=!sesAcik;
+  document.getElementById('sesBtn').textContent=sesAcik?'🔊 Ses Açık':'🔇 Ses Kapalı';
+}
 
-  hafiza.push({tur:"user", metin:text});
-  mesajEkle("user", text);
+function gonder(){
+  const t=input.value.trim();
+  if(!t)return;
+  input.value='';
+  mesajEkle('user','Sen: '+t);
+  hafiza.push({t:'user',x:'Sen: '+t});
+  kaydet();
 
   setTimeout(()=>{
-    const reply = cevapUret(text);
-    hafiza.push({tur:"bot", metin:reply});
-    mesajEkle("bot", reply);
+    const r=cevapUret(t);
+    mesajEkle('bot','Aptal: '+r);
+    hafiza.push({t:'bot',x:'Aptal: '+r});
     kaydet();
+    konus(r);
   },300);
+}
 
-  kaydet();
-});
+send.onclick=gonder;
+input.addEventListener('keydown',e=>{if(e.key==='Enter')gonder();});
 </script>
-
 </body>
 </html>
