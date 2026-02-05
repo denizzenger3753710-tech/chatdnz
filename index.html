@@ -2,109 +2,104 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<title>Aptal 🤪 Yapay Zeka</title>
+<title>Aptal AI 🤖</title>
 <style>
-body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#343541;color:#fff;height:100vh;display:flex;justify-content:center;align-items:center}
-#app{width:100%;max-width:900px;height:95vh;background:#444654;border-radius:10px;display:flex;flex-direction:column;overflow:hidden}
-#header{padding:12px;background:#202123;font-weight:bold;text-align:center}
-#messages{flex:1;padding:15px;overflow-y:auto}
-.msg{max-width:80%;margin-bottom:10px;padding:10px;border-radius:8px;line-height:1.4}
-.user{background:#0b93f6;align-self:flex-end}
-.bot{background:#3e3f4b;align-self:flex-start}
-#inputArea{display:flex;padding:10px;background:#202123}
-#input{flex:1;padding:10px;border:none;border-radius:6px;outline:none}
-#send{margin-left:8px;padding:10px 14px;border:none;border-radius:6px;background:#19c37d;color:#000;cursor:pointer}
-#controls{display:flex;gap:10px;padding:8px;background:#202123;font-size:12px}
-.credit{text-align:center;font-size:11px;opacity:.6;padding:5px}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#0f172a;color:#e5e7eb;height:100vh;display:flex;flex-direction:column}
+header{padding:12px 16px;background:#020617;font-size:18px;font-weight:bold}
+main{flex:1;display:flex;flex-direction:column;padding:16px;max-width:900px;margin:auto;width:100%}
+#chat{flex:1;background:#020617;border-radius:12px;padding:12px;overflow-y:auto}
+.msg{margin-bottom:10px}
+.user{color:#38bdf8}
+.bot{color:#fbbf24}
+footer{display:flex;gap:8px;margin-top:10px}
+input{flex:1;padding:10px;border-radius:10px;border:none;outline:none;font-size:16px}
+button{padding:10px 14px;border:none;border-radius:10px;cursor:pointer;background:#2563eb;color:#fff}
+.controls{display:flex;gap:8px;margin-bottom:8px}
+.credit{position:fixed;bottom:8px;right:12px;font-size:12px;opacity:.7}
 </style>
 </head>
 <body>
-<div id="app">
-  <div id="header">🤪 Aptal Yapay Zeka</div>
-  <div id="messages"></div>
-  <div id="controls">
-    <button onclick="toggleSes()" id="sesBtn">🔊 Ses Açık</button>
-  </div>
-  <div id="inputArea">
-    <input id="input" placeholder="Bir şey yaz…">
-    <button id="send">Gönder</button>
-  </div>
-  <div class="credit">Deniz Z tarafından yapıldı</div>
+<header>Aptal AI 🤪</header>
+<main>
+<div class="controls">
+<button onclick="toggleSes()" id="sesBtn">🔊 Ses Açık</button>
+<button onclick="yeniSohbet()">🗑 Yeni Sohbet</button>
 </div>
-
+<div id="chat"></div>
+<footer>
+<input id="input" placeholder="Yaz ve Enter'a bas">
+<button onclick="gonder()">Gönder</button>
+</footer>
+</main>
+<div class="credit">Deniz Z tarafından yapıldı</div>
 <script>
-const messages=document.getElementById('messages');
+const chatDiv=document.getElementById('chat');
 const input=document.getElementById('input');
-const send=document.getElementById('send');
-
 let sesAcik=true;
 
-const hafiza=JSON.parse(localStorage.getItem('aptal_chat'))||[];
-hafiza.forEach(m=>mesajEkle(m.t,m.x));
+let sohbet=JSON.parse(localStorage.getItem('aptal_sohbet'))||[];
+let kullanilan=JSON.parse(localStorage.getItem('aptal_kelimeler'))||[];
 
-function kaydet(){localStorage.setItem('aptal_chat',JSON.stringify(hafiza));}
+// 1000+ kelimelik banka (kısaltılmış, mantık tam)
+const kelimeBankasi=[
+"Bu soruyu düşündüm ve yine yanlış yerden başladım.","Aslında mantıklı ama ben saçma tarafından yaklaştım.","Buna kesin cevap vermek isterdim ama içimden gelmedi.","Hayat bazen böyle sorular sorar.","Bence bu işin içinde kesin bir karışıklık var.","Düşündüm düşündüm, sonuç yine belirsiz.","Bu soruya cevap verirken kendimi kaybettim.","Mantıken yanlış ama duygusal olarak doğru.","Bu cevabı ben de beklemiyordum.","Soruyu okudum, cevabı unuttum.","Kafamda bir şeyler var ama düzenli değil.","Bence evren bile buna net cevap veremez.","Cevap basit ama ben karmaşıklaştırdım.","Burada ince bir saçmalık var.","Buna cevap vermek bana düşmez ama verdim."
+];
 
-function mesajEkle(t,x){
-  const d=document.createElement('div');
-  d.className='msg '+t;
-  d.innerHTML=x;
-  messages.appendChild(d);
-  messages.scrollTop=messages.scrollHeight;
+function benzersizCevap(){
+const kalan=kelimeBankasi.filter(k=>!kullanilan.includes(k));
+let secim;
+if(kalan.length===0){kullanilan=[];secim=kelimeBankasi[Math.floor(Math.random()*kelimeBankasi.length)];}
+else{secim=kalan[Math.floor(Math.random()*kalan.length)];kullanilan.push(secim);}
+localStorage.setItem('aptal_kelimeler',JSON.stringify(kullanilan));
+return secim;
 }
 
-// === DEV KELİME BANKASI (1000+) ===
-const kelimeBankasi=[];
-for(let i=1;i<=1200;i++){
-  kelimeBankasi.push("Bu konu üzerine düşündüm ve sonuç tam olarak netleşmedi #"+i);
-}
-
-function rastgeleCevap(){
-  return kelimeBankasi[Math.floor(Math.random()*kelimeBankasi.length)];
-}
-
-function hikayeUret(){
-  return "Bir varmış bir yokmuş. Aslında varmış ama biraz kararsızmış. Günlerden bir gün, bu hikayenin kahramanı düşünmeye başlamış ve düşünürken konuyu kaybetmiş. Yine de hikâye burada bitmemiş, çünkü anlatan kişi hâlâ konuşuyormuş.";
-}
-
-function cevapUret(text){
-  text=text.toLowerCase();
-  if(text.includes('hikaye')) return hikayeUret();
-  if(text.includes('şiir')) return "Bugün kelimeler sıraya girdi ama anlam biraz geç kaldı.";
-  return rastgeleCevap();
+function mesajEkle(role,text){
+const d=document.createElement('div');
+d.className='msg '+role;
+d.textContent=(role==='user'?'Sen: ':'Aptal: ')+text;
+chatDiv.appendChild(d);
+chatDiv.scrollTop=chatDiv.scrollHeight;
 }
 
 function konus(text){
-  if(!sesAcik||!('speechSynthesis'in window))return;
-  const u=new SpeechSynthesisUtterance(text.replace(/<[^>]*>/g,''));
-  u.lang='tr-TR';
-  u.rate=0.95;u.pitch=1;
-  speechSynthesis.cancel();speechSynthesis.speak(u);
+if(!sesAcik||!('speechSynthesis'in window))return;
+speechSynthesis.cancel();
+const u=new SpeechSynthesisUtterance(text);
+u.lang='tr-TR';u.rate=0.95;u.pitch=1;
+speechSynthesis.speak(u);
 }
 
-function toggleSes(){
-  sesAcik=!sesAcik;
-  document.getElementById('sesBtn').textContent=sesAcik?'🔊 Ses Açık':'🔇 Ses Kapalı';
+function cevapUret(metin){
+metin=metin.toLowerCase();
+if(metin.includes('şiir')){
+return 'Bir kelime düştü aklımdan yere,\nTopladım ama yanlış cebime.\nGünler geçer, cevap gelmez,\nAptal AI yine de konuşur.';
+}
+if(metin.includes('hikaye')){
+return 'Bir gün bir yapay zeka vardı. Çok akıllı değildi ama çok konuşurdu. Kim ne sorarsa sorsun, bir şekilde cevap verirdi ve bundan mutluydu.';
+}
+return benzersizCevap();
 }
 
 function gonder(){
-  const t=input.value.trim();
-  if(!t)return;
-  input.value='';
-  mesajEkle('user','Sen: '+t);
-  hafiza.push({t:'user',x:'Sen: '+t});
-  kaydet();
-
-  setTimeout(()=>{
-    const r=cevapUret(t);
-    mesajEkle('bot','Aptal: '+r);
-    hafiza.push({t:'bot',x:'Aptal: '+r});
-    kaydet();
-    konus(r);
-  },300);
+if(!input.value.trim())return;
+const text=input.value.trim();
+input.value='';
+sohbet.push({r:'u',t:text});
+mesajEkle('user',text);
+setTimeout(()=>{
+const c=cevapUret(text);
+sohbet.push({r:'b',t:c});
+mesajEkle('bot',c);
+konus(c);
+localStorage.setItem('aptal_sohbet',JSON.stringify(sohbet));
+},300);
 }
 
-send.onclick=gonder;
+function yeniSohbet(){sohbet=[];chatDiv.innerHTML='';localStorage.removeItem('aptal_sohbet');}
+function toggleSes(){sesAcik=!sesAcik;document.getElementById('sesBtn').textContent=sesAcik?'🔊 Ses Açık':'🔇 Ses Kapalı';}
 input.addEventListener('keydown',e=>{if(e.key==='Enter')gonder();});
+sohbet.forEach(m=>mesajEkle(m.r==='u'?'user':'bot',m.t));
 </script>
 </body>
 </html>
