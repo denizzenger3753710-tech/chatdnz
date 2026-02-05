@@ -1,188 +1,69 @@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-  <meta charset="UTF-8" />
-  <title>Aptal 🤪 | Komik Sohbet Botu</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <style>
-    body{
-      margin:0;
-      font-family:Arial, sans-serif;
-      background:linear-gradient(135deg,#1e3c72,#2a5298);
-      color:#fff;
-      height:100vh;
-      display:flex;
-    }
-    .sidebar{
-      width:240px;
-      background:#111;
-      padding:12px;
-      box-sizing:border-box;
-    }
-    .sidebar h2{margin:0 0 10px 0;font-size:18px}
-    .sidebar button{
-      width:100%;
-      padding:8px;
-      border:none;
-      border-radius:6px;
-      cursor:pointer;
-      background:#2a5298;
-      color:#fff;
-    }
-    .chat-list{list-style:none;padding:0;margin:10px 0 0 0}
-    .chat-list li{
-      padding:6px;
-      background:#222;
-      margin-bottom:6px;
-      border-radius:6px;
-      cursor:pointer;
-    }
-    .chat-list li.active{background:#333}
-
-    .chat-area{
-      flex:1;
-      display:flex;
-      flex-direction:column;
-      padding:16px;
-      box-sizing:border-box;
-    }
-    .top{
-      display:flex;
-      gap:8px;
-      margin-bottom:8px;
-    }
-    .top button{
-      padding:6px 10px;
-      border:none;
-      border-radius:6px;
-      cursor:pointer;
-    }
-    .messages{
-      flex:1;
-      background:#000;
-      border-radius:8px;
-      padding:10px;
-      overflow-y:auto;
-    }
-    .user{color:#4fc3f7;margin-bottom:6px}
-    .bot{color:#ffb74d;margin-bottom:6px}
-    input{
-      margin-top:10px;
-      padding:10px;
-      border:none;
-      border-radius:8px;
-      outline:none;
-    }
-    .credit{
-      position:fixed;
-      bottom:10px;
-      right:10px;
-      font-size:12px;
-      opacity:.8;
-    }
-  </style>
-</head>
-<body>
-
-<div class="sidebar">
-  <h2>Sohbetlerim</h2>
-  <button onclick="yeniSohbet()">+ Yeni Sohbet</button>
-  <ul class="chat-list" id="chatList"></ul>
-</div>
-
-<div class="chat-area">
-  <div class="top">
-    <button onclick="sesToggle()" id="sesBtn">🔊 Ses Açık</button>
-  </div>
-  <div class="messages" id="messages"></div>
-  <input id="input" type="text" placeholder="Bir şey yaz ve Enter'a bas" />
-</div>
-
-<div class="credit">🤖 Deniz Z tarafından yapıldı</div>
-
 <script>
-  const input = document.getElementById('input');
-  const messagesDiv = document.getElementById('messages');
-  const chatList = document.getElementById('chatList');
+const cevapHavuzu = [
+  "Bu soruya yaklaşırken biraz durup düşünmek gerekiyor.",
+  "Açık konuşayım, bu konu sandığından daha derin.",
+  "Bunu tek cümleyle açıklamak pek mümkün değil.",
+  "Sorunun özü güzel ama cevabı o kadar basit değil.",
+  "Bu meseleye farklı bir açıdan bakmak faydalı olabilir.",
+  "Mantık yürütürsek birkaç ihtimal ön plana çıkıyor.",
+  "Bence burada gözden kaçan küçük bir detay var.",
+  "Bu tür sorular genelde insanı düşünmeye zorlar.",
+  "Net konuşmak gerekirse kesin bir yargıya varmak zor.",
+  "Bu konunun cevabı duruma göre değişebilir.",
+  "Bunu düşünürken farklı senaryolar akla geliyor.",
+  "Söylediğin şey mantıksız değil ama eksik.",
+  "Bu soru beklediğimden daha ilginç çıktı.",
+  "Aslında cevap basit gibi duruyor ama değil.",
+  "Bence burada önemli olan bakış açısı.",
+  "Bu konu üzerine saatlerce konuşulabilir.",
+  "Bunu cevaplamak için biraz düşünmek lazım.",
+  "Sorunun kendisi cevabından daha dikkat çekici.",
+  "Bu konuda kesin konuşanlara pek güvenmem.",
+  "Açıkçası bu soru beni biraz düşündürdü."
+];
 
-  let chats = [];
-  let activeChat = null;
-  let sesAcik = true;
+// Kullanıcıya söylenen cevapları tutar
+let kullanilanCevaplar = JSON.parse(
+  localStorage.getItem("kullanilanCevaplar")
+) || [];
 
-  const cevaplar = [
-    '1453 olabilir',
-    'Bence simit',
-    'Bu çok derin bir soru',
-    'Cevabı kumrular bilir',
-    'Matematik beni aştı',
-    'Kesin 42',
-    'Buna kalbimle cevap veriyorum: evet',
-    'Birazdan düşüneceğim',
-    'Bence hayır ama emin değilim',
-    'Bu soru bana bakıyor'
-  ];
+function benzersizCevapUret() {
+  const kalanlar = cevapHavuzu.filter(
+    c => !kullanilanCevaplar.includes(c)
+  );
 
-  function yeniSohbet(){
-    chats.push({title:'Sohbet '+(chats.length+1),messages:[]});
-    activeChat = chats.length-1;
-    sohbetleriYukle();
-    mesajlariYukle();
+  // Hepsi bittiyse sıfırla
+  if (kalanlar.length === 0) {
+    kullanilanCevaplar = [];
+    localStorage.setItem(
+      "kullanilanCevaplar",
+      JSON.stringify(kullanilanCevaplar)
+    );
+    return benzersizCevapUret();
   }
 
-  function sohbetleriYukle(){
-    chatList.innerHTML='';
-    chats.forEach((c,i)=>{
-      const li=document.createElement('li');
-      li.textContent=c.title;
-      if(i===activeChat) li.classList.add('active');
-      li.onclick=()=>{activeChat=i;mesajlariYukle();sohbetleriYukle()};
-      chatList.appendChild(li);
-    });
-  }
+  const secilen = kalanlar[Math.floor(Math.random() * kalanlar.length)];
+  kullanilanCevaplar.push(secilen);
+  localStorage.setItem(
+    "kullanilanCevaplar",
+    JSON.stringify(kullanilanCevaplar)
+  );
+  return secilen;
+}
 
-  function mesajlariYukle(){
-    messagesDiv.innerHTML='';
-    chats[activeChat].messages.forEach(m=>mesajEkle(m.role,m.text));
-  }
+// MESAJ GÖNDERME
+input.addEventListener("keydown", e => {
+  if (e.key !== "Enter" || !input.value.trim()) return;
 
-  function mesajEkle(role,text){
-    const d=document.createElement('div');
-    d.className=role;
-    d.textContent=(role==='user'?'Sen: ':'Aptal: ')+text;
-    messagesDiv.appendChild(d);
-    messagesDiv.scrollTop=messagesDiv.scrollHeight;
-  }
+  const text = input.value.trim();
+  input.value = "";
 
-  input.addEventListener('keydown',e=>{
-    if(e.key!=='Enter' || !input.value.trim()) return;
-    if(activeChat===null) yeniSohbet();
+  mesajEkle("user", text);
 
-    const text=input.value.trim();
-    input.value='';
-    chats[activeChat].messages.push({role:'user',text});
-    mesajEkle('user',text);
+  const reply = benzersizCevapUret();
 
-    const reply=cevaplar[Math.floor(Math.random()*cevaplar.length)];
-    setTimeout(()=>{
-      chats[activeChat].messages.push({role:'bot',text:reply});
-      mesajEkle('bot',reply);
-      konus(reply);
-    },300);
-  });
-
-  function konus(text){
-    if(!sesAcik || !('speechSynthesis' in window)) return;
-    const u=new SpeechSynthesisUtterance(text);
-    u.lang='tr-TR';
-    speechSynthesis.cancel();
-    speechSynthesis.speak(u);
-  }
-
-  function sesToggle(){
-    sesAcik=!sesAcik;
-    document.getElementById('sesBtn').textContent=sesAcik?'🔊 Ses Açık':'🔇 Ses Kapalı';
-    if(!sesAcik) speechSynthesis.cancel();
-  }
+  setTimeout(() => {
+    mesajEkle("bot", reply);
+  }, 400);
+});
 </script>
-</body>
-</html>
