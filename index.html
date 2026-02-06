@@ -64,7 +64,8 @@ function lafSokModlu(){
  const mood=mod.value;
  if(mood==="sinirli") return sinirBas[rand(sinirBas)]+" "+sinirOrta[rand(sinirOrta)]+" "+sinirSon[rand(sinirSon)];
  if(mood==="mutlu") return mutluBas[rand(mutluBas)]+" "+mutluOrta[rand(mutluOrta)]+" "+mutluSon[rand(mutluSon)];
- return normalBas[rand(normalBas)]+" "+normalOrta[rand(normalOrta)]+" "+normalSon[rand(normal
+ return normalBas[rand(normalBas)]+" "+normalOrta[rand(normalOrta)]+" "+normalSon[rand(normalSon)];
+}
 
 // === 300 MAT CEVABI ===
 const mat=["1453","42","-7","π civarı","tanımsız","çok büyük","0 ama hissettiriyor","bilinemez","8 olabilir","evren reddetti"];
@@ -85,7 +86,7 @@ function cevapUret(m){
  if(m.includes("kim yaptı")||m.includes("kim yarattı")) return "Beni DENİZ Z yaptı. Nokta.";
  if(/\d|kaç|topla|çıkar|böl|çarp/.test(m)) return mat[rand(mat)];
  if(m.includes("şiir")) return siirYaz();
- return lafSok();
+ return lafSokModlu();
 }
 
 function ekle(t,m){
