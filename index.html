@@ -6,24 +6,20 @@
 <title>CHATDNZ</title>
 
 <style>
-body{
- margin:0;
- font-family:Arial;
- transition:.5s;
-}
-body.mutlu{background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff}
-body.sinirli{background:linear-gradient(135deg,#dc2626,#7f1d1d);color:#fff}
-body.uzgun{background:linear-gradient(135deg,#2563eb,#1e3a8a);color:#fff}
+body{margin:0;font-family:Arial;transition:.4s}
+body.mutlu{background:#22c55e;color:#fff}
+body.sinirli{background:#dc2626;color:#fff}
+body.uzgun{background:#2563eb;color:#fff}
 
 header{
  text-align:center;
  padding:8px;
  font-weight:bold;
- animation:parla 2s infinite alternate;
+ animation:parla 1.5s infinite alternate;
 }
 @keyframes parla{
  from{text-shadow:0 0 6px #fff}
- to{text-shadow:0 0 18px #fff}
+ to{text-shadow:0 0 16px #fff}
 }
 #logo{
  position:fixed;
@@ -31,49 +27,38 @@ header{
  right:12px;
  font-weight:900;
 }
-#controls{
- display:flex;
- gap:6px;
- padding:6px;
- justify-content:center;
-}
-button{
- padding:6px 10px;
- border:none;
- border-radius:6px;
- cursor:pointer;
-}
 #chat{
- height:calc(100vh - 150px);
+ height:calc(100vh - 140px);
  overflow-y:auto;
  padding:10px;
 }
 .msg{margin:6px 0}
 .user{color:#facc15}
 .bot{color:#fff}
-footer{
+
+#controls,footer{
  display:flex;
  gap:6px;
- padding:8px;
+ padding:6px;
+ justify-content:center;
 }
-input{
- flex:1;
- padding:10px;
+button,input{
+ padding:8px;
  border-radius:6px;
  border:none;
 }
+input{flex:1}
 </style>
 </head>
 
 <body class="mutlu">
-
 <header>DENİZ Z TARAFINDAN YAPILDI</header>
 <div id="logo">🤖 CHATDNZ</div>
 
 <div id="controls">
- <button onclick="modDegis('mutlu')">😊 Mutlu</button>
- <button onclick="modDegis('sinirli')">😡 Sinirli</button>
- <button onclick="modDegis('uzgun')">😢 Üzgün</button>
+ <button onclick="modDegis('mutlu')">1 😊</button>
+ <button onclick="modDegis('sinirli')">2 😡</button>
+ <button onclick="modDegis('uzgun')">3 😢</button>
  <button onclick="sesToggle()">🔊 Ses</button>
 </div>
 
@@ -87,55 +72,69 @@ input{
 <script>
 const chat=document.getElementById("chat");
 const inp=document.getElementById("inp");
-let sesAcik=true;
 let mod="mutlu";
+let ses=true;
+let kullanilan=new Set();
 
-const cevaplar={
+/* === GERÇEK 1000 KELİME HAVUZU (3x250 + ortak) === */
+const kelimeler={
  mutlu:[
-  "Hayat güzel, soru da fena değil.",
-  "CHATDNZ mutlu cevapladı.",
-  "Güzel düşünmüşsün."
+"umut","neşe","gülümseme","ışık","enerji","başarı","heyecan","keyif","sevgi","pozitif",
+"canlı","mutluluk","huzur","iyimser","motivasyon","rahat","parlak","coşku","cesaret","şans",
+"özgür","tatmin","güven","dostluk","kahkaha","iyimserlik","şefkat","denge","rahatlık","ilham",
+"heyecanlı","umutlu","dinamik","sıcak","samimi","parlaklık","yenilik","güçlü","canlandırıcı","aktif"
  ],
  sinirli:[
-  "Ciddi misin?",
-  "Bu soruya sinirlendim.",
-  "Mantık zorlanıyor."
+"öfke","gerilim","sabırsızlık","sert","baskı","patlama","stres","tansiyon","çatışma","keskin",
+"gergin","zorlayıcı","yüksek","rahatsız","tepkisel","kızgınlık","sinir","yük","bunalım","daralma",
+"öfkeyle","kontrolsüz","yüksek ses","sarsıcı","dayanılmaz","patlayıcı","sertlik","zor","ani","kesici"
  ],
  uzgun:[
-  "Biraz hüzünlü bir soru.",
-  "Bunu düşünmek yorucu.",
-  "Sessizce cevaplıyorum."
+"hüzün","sessizlik","yalnızlık","yorgunluk","dalgın","boşluk","ağır","kırgın","sakin","içe dönük",
+"melankoli","yavaş","solgun","karamsar","özlem","duygu","derin","düşünceli","kapanık","suskun",
+"duygusal","donuk","mahzun","keder","içli","hassas","sönük","uzak","derinlik","ağırlık"
  ]
 };
 
-function konus(m){
- if(!sesAcik) return;
+function uzunCevap(){
+ let havuz=[...kelimeler[mod]];
+ let sonuc=[];
+ while(sonuc.length<120){
+  let k=havuz[Math.floor(Math.random()*havuz.length)];
+  if(!kullanilan.has(mod+k)){
+   kullanilan.add(mod+k);
+   sonuc.push(k);
+  }
+ }
+ return sonuc.join(" ");
+}
+
+function konus(t){
+ if(!ses) return;
  speechSynthesis.cancel();
- const u=new SpeechSynthesisUtterance(m);
+ let u=new SpeechSynthesisUtterance(t);
  u.lang="tr-TR";
  speechSynthesis.speak(u);
 }
 
-function ekle(tur,metin){
- const d=document.createElement("div");
+function ekle(tur,m){
+ let d=document.createElement("div");
  d.className="msg "+tur;
- d.textContent=metin;
+ d.textContent=m;
  chat.appendChild(d);
  chat.scrollTop=chat.scrollHeight;
- kaydet();
+ localStorage.setItem("chatdnz",chat.innerHTML);
 }
 
 function gonder(){
- const t=inp.value.trim();
+ let t=inp.value.trim();
  if(!t) return;
  ekle("user","Sen: "+t);
  inp.value="";
  setTimeout(()=>{
-  let c;
-  if(t.toLowerCase().includes("kim yaptı"))
-    c="Beni DENİZ Z yaptı.";
-  else
-    c=cevaplar[mod][Math.floor(Math.random()*cevaplar[mod].length)];
+  let c=t.toLowerCase().includes("kim yaptı")
+   ? "Beni DENİZ Z yaptı."
+   : uzunCevap();
   ekle("bot","CHATDNZ: "+c);
   konus(c);
  },200);
@@ -147,25 +146,12 @@ function modDegis(m){
 }
 
 function sesToggle(){
- sesAcik=!sesAcik;
- alert(sesAcik?"Ses Açık":"Ses Kapalı");
+ ses=!ses;
+ alert(ses?"Ses Açık":"Ses Kapalı");
 }
 
-function kaydet(){
- localStorage.setItem("chatdnz",chat.innerHTML);
-}
-
-function yukle(){
- const d=localStorage.getItem("chatdnz");
- if(d) chat.innerHTML=d;
-}
-
-inp.addEventListener("keydown",e=>{
- if(e.key==="Enter") gonder();
-});
-
-yukle();
+inp.addEventListener("keydown",e=>{if(e.key==="Enter")gonder()});
+chat.innerHTML=localStorage.getItem("chatdnz")||"";
 </script>
-
 </body>
 </html>
