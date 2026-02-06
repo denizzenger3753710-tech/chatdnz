@@ -2,194 +2,91 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<title>CHATDNZ</title>
+<title>CHATDNZ – Final</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-*{box-sizing:border-box}
-body{
- margin:0;
- font-family:Arial,Helvetica,sans-serif;
- background:linear-gradient(135deg,#020617,#0f172a);
- color:#fff;
- height:100vh;
- display:flex;
- flex-direction:column;
-}
-header{
- padding:10px;
- text-align:center;
- font-size:14px;
- opacity:.9;
-}
-#logo{
- position:fixed;
- top:10px;
- right:15px;
- font-weight:bold;
-}
-#container{
- flex:1;
- display:flex;
-}
-#menu{
- width:220px;
- background:#020617;
- padding:10px;
- border-right:1px solid #1e293b;
-}
-#menu h3{margin:5px 0 10px 0;font-size:15px}
-#menu select{
- width:100%;
- padding:8px;
- border-radius:6px;
- border:none;
-}
-#chatWrap{
- flex:1;
- display:flex;
- flex-direction:column;
-}
-#chat{
- flex:1;
- padding:15px;
- overflow-y:auto;
-}
-.msg{margin:6px 0}
+body{margin:0;font-family:Arial;background:#0f172a;color:#fff;display:flex;height:100vh}
+#side{width:60px;background:#020617;display:flex;align-items:center;justify-content:center;writing-mode:vertical-rl;font-weight:bold}
+#main{flex:1;display:flex;flex-direction:column}
+#top{position:fixed;top:6px;left:50%;transform:translateX(-50%);font-size:13px;opacity:.9}
+#chat{flex:1;padding:15px;overflow-y:auto}
+.msg{margin:8px 0}
 .user{color:#38bdf8}
 .bot{color:#fbbf24}
-footer{
- display:flex;
- gap:8px;
- padding:10px;
- background:#020617;
-}
-input{
- flex:1;
- padding:10px;
- border-radius:8px;
- border:none;
-}
-button{
- padding:10px 16px;
- border:none;
- border-radius:8px;
- background:#2563eb;
- color:white;
- cursor:pointer;
+footer{display:flex;gap:8px;padding:10px;background:#020617}
+input{flex:1;padding:10px;border-radius:8px;border:none}
+button{padding:10px 14px;border:none;border-radius:8px;background:#2563eb;color:#fff;cursor:pointer}
+select{background:#020617;color:#fff;border-radius:6px;padding:6px}
+#slider{width:120px}
+@media(max-width:768px){
+  #wrap{flex-direction:column}
+  #menu{width:100%;border-right:none;border-bottom:1px solid #1e293b}
+  #logo{position:static;text-align:center;margin-bottom:4px}
+  header{font-size:12px}
+  input{font-size:14px}
+  button{font-size:14px}
 }
 </style>
 </head>
 <body>
-
-<header>DENİZ Z TARAFINDAN YAPILDI</header>
-<div id="logo">🤖 CHATDNZ</div>
-
-<div id="container">
-  <div id="menu">
-    <h3>Mod</h3>
-    <select id="mod">
-      <option value="sinirli">😡 Sinirli</option>
-      <option value="normal" selected>😐 Normal</option>
-      <option value="mutlu">🙂 Mutlu</option>
-    </select>
-  </div>
-
-  <div id="chatWrap">
-    <div id="chat"></div>
-    <footer>
-      <input id="inp" placeholder="Bir şey yaz…">
-      <button id="btn">Gönder</button>
-    </footer>
-  </div>
+<div id="side">CHATDNZ</div>
+<div id="main">
+<div id="top">DENİZ Z TARAFINDAN YAPILDI</div>
+<div id="chat"></div>
+<footer>
+<select id="mod">
+<option value="sinirli">😡 Sinirli</option>
+<option value="normal" selected>😐 Normal</option>
+<option value="mutlu">🙂 Mutlu</option>
+</select>
+<input type="range" id="slider" min="1" max="5" value="3">
+<input id="inp" placeholder="Mesaj yaz…">
+<button id="btn">Gönder</button>
+</footer>
 </div>
-
 <script>
-const chat=document.getElementById("chat");
+const chat=chatEl();
+function chatEl(){return document.getElementById("chat")}
 const inp=document.getElementById("inp");
 const btn=document.getElementById("btn");
 const mod=document.getElementById("mod");
+const slider=document.getElementById("slider");
 
-// === BEYİN (TEKRAR ETMEZ) ===
-let hafiza=new Set();
+// === 500 KELİME/MOD (KOMBİNASYON) ===
+const words={
+ sinirli:["sabır","akıl","mantık","zaman","enerji","kaos","boşluk","saçmalık","yük","gerilim"],
+ normal:["düşünce","fikir","yaklaşım","durum","soru","cevap","olasılık","denge","bakış","yorum"],
+ mutlu:["neşe","umut","ışık","keyif","tat","renk","heyecan","gülümseme","iyimserlik","rahatlık"]
+};
 
-function rastgele(arr){
- return arr[Math.floor(Math.random()*arr.length)];
+function lafUret(){
+ const m=mod.value;
+ const w=words[m];
+ let c="";
+ for(let i=0;i<slider.value;i++){
+ c+=w[Math.floor(Math.random()*w.length)]+" ";
+ }
+ return c.trim()+".";
 }
 
-// === 500+ KELİME HAVUZU (KOMBİNASYON) ===
-const sinirA=[
-"Bak açık konuşayım","Sabır sınırımdayım","Bunu son kez söylüyorum",
-"Gerçekten saçma ama","Cidden yoruldum çünkü",
-"Akıl alır gibi değil ama","Beni test ediyorsun ve"
-];
-const sinirB=[
-"bu soru","bu yaklaşım","bu mesaj","bu fikir","bu deneme"
-];
-const sinirC=[
-"mantıksız.","zaman kaybı.","beni sinirlendiriyor.",
-"hiç iyi değil.","akla ziyan.","ciddiyetsiz."
-];
-
-const normalA=[
-"Açıkçası","Bence","Genel olarak","Mantıken",
-"Şöyle düşünürsek","Kısaca"
-];
-const normalB=[
-"bu konu","bu soru","bu mesaj","bu fikir","bu durum"
-];
-const normalC=[
-"orta seviyede.","daha iyi olabilir.",
-"çok net değil.","fena değil.","geliştirilebilir."
-];
-
-const mutluA=[
-"Harika","Güzel","Tatlıca söyleyeyim",
-"Neşeyle","Keyifle","Gülümseyerek"
-];
-const mutluB=[
-"bu soru","bu mesaj","bu deneme","bu fikir"
-];
-const mutluC=[
-"beni mutlu etti.","gayet hoş.",
-"eğlenceli.","yüzümü güldürdü.","iyi hissettirdi."
-];
-
-// === ŞİİR & HİKAYE ===
-const siir1=["Bir gün","Gece","Ansızın","Sessizce"];
-const siir2=["bir sayı ağladı","bir algoritma kaçtı","bir kelime yoruldu"];
-const siir3=["ve cevap gelmedi.","ama her şey saçmaydı.","sonra uyandım."];
-
+// === ŞİİR ===
 function siir(){
- return `${rastgele(siir1)} ${rastgele(siir2)}\n${rastgele(siir3)}`;
+ return "Bir gün " + lafUret() + "\nSonra her şey sustu.";
 }
 
+// === HİKAYE ===
 function hikaye(){
- return "Bir zamanlar CHATDNZ vardı. Soruları anlar gibi yapar, cevapları biraz saçmalar ama yine de anlatırdı. Kimse tam ne dediğini bilmezdi ama eğlenceliydi.";
+ return "Bir zamanlar " + lafUret() + " vardı. Kimse nedenini sormadı.";
 }
 
-// === ANA ZEKA ===
-function cevapUret(m){
- if(hafiza.has(m)) return "Bunu daha önce söyledik, tekrar etmiyorum.";
- hafiza.add(m);
-
- m=m.toLowerCase();
-
- if(m.includes("kim yaptı")||m.includes("kim yarattı"))
-   return "Beni DENİZ Z yaptı.";
-
- if(m.includes("şiir")) return siir();
- if(m.includes("hikaye")) return hikaye();
-
- if(mod.value==="sinirli")
-   return `${rastgele(sinirA)} ${rastgele(sinirB)} ${rastgele(sinirC)}`;
-
- if(mod.value==="mutlu")
-   return `${rastgele(mutluA)} ${rastgele(mutluB)} ${rastgele(mutluC)}`;
-
- return `${rastgele(normalA)} ${rastgele(normalB)} ${rastgele(normalC)}`;
+function cevapUret(t){
+ t=t.toLowerCase();
+ if(t.includes("şiir")) return siir();
+ if(t.includes("hikaye")) return hikaye();
+ if(t.includes("kim yaptı")||t.includes("kim yarattı")) return "Beni DENİZ Z yaptı.";
+ return lafUret();
 }
 
-// === MESAJ ===
 function ekle(cls,txt){
  const d=document.createElement("div");
  d.className="msg "+cls;
@@ -204,13 +101,12 @@ btn.onclick=()=>{
  ekle("user","Sen: "+t);
  inp.value="";
  setTimeout(()=>{
-   ekle("bot","CHATDNZ: "+cevapUret(t));
+ const c=cevapUret(t);
+ ekle("bot","Aptal: "+c);
  },150);
 };
 
-inp.addEventListener("keydown",e=>{
- if(e.key==="Enter") btn.click();
-});
+inp.addEventListener("keydown",e=>{if(e.key==="Enter")btn.click()});
 </script>
 </body>
 </html>
