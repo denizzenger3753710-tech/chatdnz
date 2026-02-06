@@ -6,132 +6,143 @@
 <title>CHATDNZ</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;font-family:Arial;background:#020617;color:#fff;height:100vh;display:flex;flex-direction:column}
-header{text-align:center;padding:6px;font-size:13px}
-#logo{position:fixed;top:6px;right:10px;font-weight:bold}
+body{margin:0;font-family:Arial;background:linear-gradient(135deg,#020617,#0f172a);color:#fff;height:100vh;display:flex;flex-direction:column}
+header{text-align:center;padding:8px;font-size:14px;letter-spacing:1px}
+#logo{position:fixed;top:8px;right:12px;font-weight:bold}
 #wrap{flex:1;display:flex}
-#menu{width:220px;background:#020617;padding:10px;border-right:1px solid #1e293b}
-#menu select,#menu button,#menu input{width:100%;margin-top:6px;padding:8px;border-radius:6px;border:none}
+#menu{width:230px;background:#020617;padding:12px;border-right:1px solid #1e293b}
+#menu h3{margin:4px 0}
+#menu select,#menu button,#menu input{width:100%;margin-top:8px;padding:8px;border-radius:6px;border:none}
 #chatWrap{flex:1;display:flex;flex-direction:column}
-#sinirBar{height:6px;background:#16a34a;width:30%}
-#chat{flex:1;padding:10px;overflow-y:auto}
-.msg{margin:5px 0}
+#sinirBar{height:8px;width:30%;background:#16a34a;transition:.2s}
+#chat{flex:1;padding:12px;overflow-y:auto}
+.msg{margin:6px 0}
 .user{color:#38bdf8}
 .bot{color:#fbbf24}
-footer{display:flex;gap:6px;padding:8px}
+footer{display:flex;gap:6px;padding:8px;background:#020617}
 footer input{flex:1;padding:10px;border-radius:6px;border:none}
 footer button{padding:10px;border-radius:6px;border:none;background:#2563eb;color:#fff}
-@media(max-width:768px){
-#wrap{flex-direction:column}
-#menu{width:100%;border-right:none;border-bottom:1px solid #1e293b}
-}
+@media(max-width:768px){#wrap{flex-direction:column}#menu{width:100%;border-right:none;border-bottom:1px solid #1e293b}}
 </style>
 </head>
-
 <body>
 <header>DENİZ Z TARAFINDAN YAPILDI</header>
 <div id="logo">🤖 CHATDNZ</div>
-
 <div id="wrap">
-<div id="menu">
-<select id="mod">
-<option value="normal">😐 Normal</option>
-<option value="sinirli">😡 Sinirli</option>
-<option value="mutlu">🙂 Mutlu</option>
-<option value="uzgun">😢 Üzgün</option>
-</select>
-
-<label>Sinir</label>
-<input type="range" id="sinir" min="0" max="100" value="30">
-
-<select id="voice">
-<option value="erkek">👨 Erkek Ses</option>
-<option value="kadin">👩 Kadın Ses</option>
-</select>
-
-<button id="sesBtn">🔊 Ses Açık</button>
-<button onclick="chat.innerHTML=''">🧹 Temizle</button>
+ <div id="menu">
+  <h3>Mod</h3>
+  <select id="mod">
+   <option value="normal">😐 Normal</option>
+   <option value="sinirli">😡 Sinirli</option>
+   <option value="mutlu">🙂 Mutlu</option>
+   <option value="uzgun">😢 Üzgün</option>
+  </select>
+  <label>Sinir Seviyesi</label>
+  <input type="range" id="sinir" min="0" max="100" value="30">
+  <button id="sesBtn">🔊 Ses Açık</button>
+  <button id="clearBtn">🧹 Sohbeti Temizle</button>
+  <button id="exportBtn">💾 Sohbeti İndir</button>
+ </div>
+ <div id="chatWrap">
+  <div id="sinirBar"></div>
+  <div id="chat"></div>
+  <footer>
+   <input id="inp" placeholder="Yaz bakalım…">
+   <button id="btn">Gönder</button>
+  </footer>
+ </div>
 </div>
-
-<div id="chatWrap">
-<div id="sinirBar"></div>
-<div id="chat"></div>
-<footer>
-<input id="inp" placeholder="Yaz...">
-<button id="btn">Gönder</button>
-</footer>
-</div>
-</div>
-
 <script>
-const chat=chat=document.getElementById('chat');
+// === TAM ÇALIŞAN GELİŞMİŞ SÜRÜM ===
+const chat = document.getElementById('chat');
 const inp=document.getElementById('inp');
 const btn=document.getElementById('btn');
 const mod=document.getElementById('mod');
 const sinir=document.getElementById('sinir');
 const sinirBar=document.getElementById('sinirBar');
 const sesBtn=document.getElementById('sesBtn');
-const voice=document.getElementById('voice');
-
+const clearBtn=document.getElementById('clearBtn');
+const exportBtn=document.getElementById('exportBtn');
 let ses=true;
-let hafiza=[];
 
-const bas=["Bak","Açıkçası","Garip ama","Net söyleyeyim","Bence"];
-const orta=["bu soru","bu konu","bu laf","bu durum","bu saçmalık"];
-const son=["mantıklı değil.","çok garip.","bana uymaz.","CHATDNZ sevmedi.","fazla iddialı."];
+// SOHBET KAYDI + HAFIZA
+let sohbet=JSON.parse(localStorage.getItem('chatdnz_sohbet')||'[]');
+let hafiza=JSON.parse(localStorage.getItem('chatdnz_hafiza')||'[]');
+
+// 1000+ KELİME GERÇEK HAVUZ (kombinasyon)
+const giris=["Bak","Açıkçası","Cidden","Harbi","Ne yalan söyleyeyim","Garip ama","İşin tuhafı","Dürüst olayım","Kabul edelim ki","Net konuşayım","Bence","Şöyle ki","Duruma göre","Aslına bakarsan"];
+const orta=["bu soru","bu konu","bu mesaj","bu yaklaşım","bu fikir","bu deneme","bu durum","bu saçmalık","bu düşünce","bu olay","bu merak","bu talep"];
+const son=["aklımı karıştırdı.","fazla iddialı.","biraz absürt.","mantık dışı.","beni yordu.","ilginç ama saçma.","tam CHATDNZ'lik.","beklediğimden garip.","net bir cevap istemiyor."];
+const mathCevap=["1453","42","Bence 7","Hocaya sor","Cevap evrende gizli","Sonuç: belirsiz"];
+const siirBas=["Bir gün","Gece vakti","Ansızın","Sessizce","Karanlıkta"];
+const siirSon=["bir algoritma ağladı","bir sayı sustu","kodlar uyandı","mantık kaçtı","veriler dağıldı"];
 
 function rand(a){return a[Math.floor(Math.random()*a.length)]}
 
-function cevap(m){
-if(hafiza.includes(m)) return "Bunu tekrar etmiyorum.";
-hafiza.push(m);
-m=m.toLowerCase();
-if(m.includes("kim yaptı")) return "Beni DENİZ Z yaptı.";
-if(m.includes("şiir")) return "Gece sustu, kodlar konuştu, CHATDNZ düşündü.";
-if(m.includes("hikaye")) return "Bir zamanlar CHATDNZ vardı, saçmalar ama cevap verirdi.";
-return rand(bas)+" "+rand(orta)+" "+rand(son);
+function zeka(m){
+ if(hafiza.includes(m)) return "Bunu daha önce sordun, tekrar etmiyorum.";
+ hafiza.push(m);
+ localStorage.setItem('chatdnz_hafiza',JSON.stringify(hafiza));
+ m=m.toLowerCase();
+ if(m.includes('kim yaptı')||m.includes('kim yarattı')) return "Beni DENİZ Z yaptı.";
+ if(m.includes('mat')) return rand(mathCevap);
+ if(m.includes('şiir')) return rand(siirBas)+" "+rand(siirSon)+".";
+ if(m.includes('hikaye')) return "Bir zamanlar CHATDNZ vardı. Anlıyor gibi yapar, saçma cevaplar üretirdi.";
+ let c=`${rand(giris)} ${rand(orta)} ${rand(son)}`;
+ if(mod.value==='sinirli'&&sinir.value>60) c+=' Sinirimi zorluyorsun.';
+ if(mod.value==='mutlu') c+=' Ama keyfim yerinde.';
+ if(mod.value==='uzgun') c+=' Biraz hüzün kattı.';
+ return c;
 }
 
-function ekle(k,t){
-const d=document.createElement('div');
-d.className='msg '+k;
-d.textContent=t;
-chat.appendChild(d);
-chat.scrollTop=chat.scrollHeight;
-}
+function ekle(k,t){const d=document.createElement('div');d.className='msg '+k;d.textContent=t;chat.appendChild(d);chat.scrollTop=chat.scrollHeight}
 
-function konus(t){
-if(!ses||!('speechSynthesis'in window))return;
-speechSynthesis.cancel();
-const u=new SpeechSynthesisUtterance(t);
-u.lang='tr-TR';
-u.pitch=voice.value==='kadin'?1.4:0.9;
-speechSynthesis.speak(u);
-}
+function konus(t){if(!ses||!('speechSynthesis'in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='tr-TR';u.pitch=mod.value==='sinirli'?0.7:mod.value==='mutlu'?1.3:1;u.rate=sinir.value>70?1.15:1;speechSynthesis.speak(u)}
+
+// eski sohbeti yükle
+sohbet.forEach(x=>ekle(x.k,x.t));
 
 btn.onclick=()=>{
-const t=inp.value.trim();
-if(!t)return;
-ekle('user','Sen: '+t);
-inp.value='';
-setTimeout(()=>{
-const c=cevap(t);
-ekle('bot','CHATDNZ: '+c);
-konus(c);
-},100);
+ const t=inp.value.trim();
+ if(!t) return;
+ ekle('user','Sen: '+t);
+ sohbet.push({k:'user',t:'Sen: '+t});
+ inp.value='';
+ setTimeout(()=>{
+  const c=zeka(t);
+  ekle('bot','CHATDNZ: '+c);
+  sohbet.push({k:'bot',t:'CHATDNZ: '+c});
+  localStorage.setItem('chatdnz_sohbet',JSON.stringify(sohbet));
+  konus(c);
+ },120);
 };
 
-inp.onkeydown=e=>{if(e.key==="Enter")btn.onclick()}
+inp.addEventListener('keydown',e=>{if(e.key==='Enter')btn.onclick()});
 
-sinir.oninput=()=>{
-sinirBar.style.width=sinir.value+"%";
-sinirBar.style.background=sinir.value>70?"#dc2626":sinir.value>40?"#facc15":"#16a34a";
+sinir.oninput=()=>{sinirBar.style.width=sinir.value+'%';sinirBar.style.background=sinir.value>70?'#dc2626':sinir.value>40?'#facc15':'#16a34a'};
+
+sesBtn.onclick=()=>{ses=!ses;sesBtn.textContent=ses?'🔊 Ses Açık':'🔇 Ses Kapalı'};
+
+clearBtn.onclick=()=>{
+ if(!confirm('Tüm sohbet silinsin mi?')) return;
+ sohbet=[];
+ hafiza=[];
+ localStorage.removeItem('chatdnz_sohbet');
+ localStorage.removeItem('chatdnz_hafiza');
+ chat.innerHTML='';
 };
 
-sesBtn.onclick=()=>{
-ses=!ses;
-sesBtn.textContent=ses?"🔊 Ses Açık":"🔇 Ses Kapalı";
-};
+exportBtn.onclick=()=>{
+ if(sohbet.length===0){alert('Sohbet yok');return;}
+ let text = sohbet.map(x => x.t).join("
+");
+ const blob=new Blob([text],{type:'text/plain'});
+ const a=document.createElement('a');
+ a.href=URL.createObjectURL(blob);
+ a.download='chatdnz_sohbet.txt';
+ a.click();
+ URL.revokeObjectURL(a.href);
+};;
 </script>
 </body>
 </html>
