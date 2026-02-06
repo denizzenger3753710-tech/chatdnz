@@ -29,8 +29,11 @@ button{padding:10px 14px;border:none;border-radius:8px;background:#2563eb;color:
 <div id="chat"></div>
 <footer>
 <select id="mod">
-� Sinirli</option>
-<option value="normal" selected>😐 Normal<
+<option value="sinirli">😡 Sinirli</option>
+<option value="normal" selected>😐 Normal</option>
+<option value="mutlu">🙂 Mutlu</option>
+</select>
+<input id="inp" placeholder="Yaz bakalım…">
 <button id="btn">Gönder</button>
 </footer>
 </div>
@@ -40,15 +43,28 @@ const chat=document.getElementById("chat");
 const inp=document.getElementById("inp");
 const btn=document.getElementById("btn");
 const bar=document.getElementById("bar");
+const mod=document.getElementById("mod");
 
-// === 1000 KELİMELİ LAF SOKMA BANKASI (ÖRNEK, DİNAMİK ÜRETİM) ===
-const bas=["Bence"Şu an","Dürüst olayım","Bunu sorarken","Gerçekten","İtiraf edeyim"];
-const orta=["böyle bir soru","bu yazdığın şey","bu mesaj","bu düşünce","bu fikir","bu saçmalık","bu deneme","bu girişim"];
-const son=["beni yordu.","evrene aykırı.","fazla iddialı.","tam bir kaos.","hiç umut vermiyor.","beynimi kapattı.","beni sinirlendirdi.","ciddiye alınamaz."];
+// === MOD BAZLI 1000+ KELİMELİ CEVAP SİSTEMİ ===
+// Her modda kombinasyonla binlerce düzgün cümle oluşur
 
-function lafSok(){
- return bas[rand(bas)]+" "+orta[rand(orta)]+" "+son[rand(son)];
-}
+const sinirBas=["Bak","Yeter artık","Cidden","Gerçekten","Şunu bilin ki","Açık konuşayım","Sabır taşı çatladı ama","Son kez söylüyorum"];
+const sinirOrta=["bu soru","bu mesaj","bu deneme","bu yaklaşım","bu fikir","bu mantık","bu yazdığın şey"];
+const sinirSon=["tam bir zaman kaybı.","akla ziyan.","beni yordu.","mantık dışı.","hiç iyi değil.","ciddiye alınamaz.","sabır testidir."];
+
+const normalBas=["Açıkçası","Bence","Düşünürsek","Genel olarak","Kısaca","Mantıken","Şöyle bakarsak"];
+const normalOrta=["bu soru","bu konu","bu mesaj","bu fikir","bu yaklaşım","bu durum"];
+const normalSon=["çok da anlamlı değil.","pek net değil.","geliştirilebilir.","ortalama bir deneme.","daha iyi sorulabilirdi."];
+
+const mutluBas=["Harika","Güzel","Tatlı bir şekilde söyleyeyim","Keyifle","Neşeyle","İyi niyetle","Gülümseyerek"];
+const mutluOrta=["bu soru","bu mesaj","bu deneme","bu fikir","bu yaklaşım"];
+const mutluSon=["fena değil.","oldukça eğlenceli.","bana keyif verdi.","yüzümü güldürdü.","tatlıydı."];
+
+function lafSokModlu(){
+ const mood=mod.value;
+ if(mood==="sinirli") return sinirBas[rand(sinirBas)]+" "+sinirOrta[rand(sinirOrta)]+" "+sinirSon[rand(sinirSon)];
+ if(mood==="mutlu") return mutluBas[rand(mutluBas)]+" "+mutluOrta[rand(mutluOrta)]+" "+mutluSon[rand(mutluSon)];
+ return normalBas[rand(normalBas)]+" "+normalOrta[rand(normalOrta)]+" "+normalSon[rand(normal
 
 // === 300 MAT CEVABI ===
 const mat=["1453","42","-7","π civarı","tanımsız","çok büyük","0 ama hissettiriyor","bilinemez","8 olabilir","evren reddetti"];
@@ -68,34 +84,40 @@ function cevapUret(m){
  m=m.toLowerCase();
  if(m.includes("kim yaptı")||m.includes("kim yarattı")) return "Beni DENİZ Z yaptı. Nokta.";
  if(/\d|kaç|topla|çıkar|böl|çarp/.test(m)) return mat[rand(mat)];
- if(m.inf(!t) return;
+ if(m.includes("şiir")) return siirYaz();
+ return lafSok();
+}
+
+function ekle(t,m){
+ const d=document.createElement("div");
+ d.className="msg "+t;
+ d.textContent=m;
+ chat.appendChild(d);
+ chat.scrollTop=chat.scrollHeight;
+}
+
+btn.onclick=()=>{
+ const t=inp.value.trim();
+ if(!t) return;
  ekle("user","Sen: "+t);
  inp.value="";
  setTimeout(()=>{
- function cevapUret(m){
-  m = m.toLowerCase();
-  const mood = mod.value;
+ const c=cevapUret(t);
+ ekle("bot","Aptal: "+c);
+ konus(c);
+ bar.style.width=Math.min(100,parseInt(bar.style.width||20)+10)+"%";
+ },200);
+};
 
-  if(m.includes("kim yaptı") || m.includes("kim yarattı")){
-    return "Beni DENİZ Z yaptı. Nokta.";
-  }
-
-  if(/\d|kaç|topla|çıkar|böl|çarp/.test(m)){
-    let c = mat[rand(mat)];
-    if(mood==="sinirli") c = "Bunu mu hesaplayamadın? " + c;
-    if(mood==="mutlu") c = "🙂 Kolaydı aslında: " + c;
-    return c;
-  }
-
-  if(m.includes("şiir")){
-    let s = siirYaz();
-    if(mood==="sinirli") s = "Zorla şiir mi istiyorsun?\n" + s;
-    if(mood==="mutlu") s = "🙂 Keyfim yerinde, al şiir:\n" + s;
-    return s;
-  }
-
-  let cevap = lafSok();
-  if(mood==="sinirli") cevap = "Kes. " + cevap;
-  if(mood==="mutlu") cevap = "🙂 Neyse iyisin. " + cevap;
-  return cevap;
+function konus(t){
+ if(!('speechSynthesis'in window))return;
+ speechSynthesis.cancel();
+ const u=new SpeechSynthesisUtterance(t);
+ u.lang='tr-TR';
+ speechSynthesis.speak(u);
 }
+
+inp.addEventListener("keydown",e=>{if(e.key==='Enter')btn.click()});
+</script>
+</body>
+</html>
