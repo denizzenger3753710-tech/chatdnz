@@ -134,8 +134,7 @@ clearBtn.onclick=()=>{
 
 exportBtn.onclick=()=>{
  if(sohbet.length===0){alert('Sohbet yok');return;}
- let text=sohbet.map(x=>x.t).join('
-');
+ let text = sohbet.map(x => x.t).join("\n");
  const blob=new Blob([text],{type:'text/plain'});
  const a=document.createElement('a');
  a.href=URL.createObjectURL(blob);
