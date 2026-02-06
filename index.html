@@ -40,6 +40,8 @@ footer button{padding:10px;border-radius:6px;border:none;background:#2563eb;colo
   <label>Sinir Seviyesi</label>
   <input type="range" id="sinir" min="0" max="100" value="30">
   <button id="sesBtn">🔊 Ses Açık</button>
+  <button id="clearBtn">🧹 Sohbeti Temizle</button>
+  <button id="exportBtn">💾 Sohbeti İndir</button>
  </div>
  <div id="chatWrap">
   <div id="sinirBar"></div>
@@ -59,6 +61,8 @@ const mod=document.getElementById('mod');
 const sinir=document.getElementById('sinir');
 const sinirBar=document.getElementById('sinirBar');
 const sesBtn=document.getElementById('sesBtn');
+const clearBtn=document.getElementById('clearBtn');
+const exportBtn=document.getElementById('exportBtn');
 let ses=true;
 
 // SOHBET KAYDI + HAFIZA
@@ -118,6 +122,27 @@ inp.addEventListener('keydown',e=>{if(e.key==='Enter')btn.onclick()});
 sinir.oninput=()=>{sinirBar.style.width=sinir.value+'%';sinirBar.style.background=sinir.value>70?'#dc2626':sinir.value>40?'#facc15':'#16a34a'};
 
 sesBtn.onclick=()=>{ses=!ses;sesBtn.textContent=ses?'🔊 Ses Açık':'🔇 Ses Kapalı'};
+
+clearBtn.onclick=()=>{
+ if(!confirm('Tüm sohbet silinsin mi?')) return;
+ sohbet=[];
+ hafiza=[];
+ localStorage.removeItem('chatdnz_sohbet');
+ localStorage.removeItem('chatdnz_hafiza');
+ chat.innerHTML='';
+};
+
+exportBtn.onclick=()=>{
+ if(sohbet.length===0){alert('Sohbet yok');return;}
+ let text=sohbet.map(x=>x.t).join('
+');
+ const blob=new Blob([text],{type:'text/plain'});
+ const a=document.createElement('a');
+ a.href=URL.createObjectURL(blob);
+ a.download='chatdnz_sohbet.txt';
+ a.click();
+ URL.revokeObjectURL(a.href);
+};;
 </script>
 </body>
 </html>
