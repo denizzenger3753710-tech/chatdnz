@@ -37,11 +37,11 @@ header{animation:pulse 2.5s infinite}
  <div id="menu">
   <h3>Mod</h3>
 <select id="mod">
- <option value="normal">😐 Normal</option>
- <option value="sinirli">😡 Sinirli</option>
- <option value="mutlu">🙂 Mutlu</option>
- <option value="uzgun">😢 Üzgün</option>
-</select>
+   <option value="normal">😐 Normal</option>
+   <option value="sinirli">😡 Sinirli</option>
+   <option value="mutlu">🙂 Mutlu</option>
+   <option value="uzgun">😢 Üzgün</option>
+  </select>
 <label>Sinir Seviyesi</label>
 <input type="range" id="sinir" min="0" max="100" value="30">
 <label>Ses</label>
@@ -114,20 +114,6 @@ function konus(t){
  speechSynthesis.cancel();
  const u=new SpeechSynthesisUtterance(t);
  u.lang='tr-TR';
- const voices=speechSynthesis.getVoices();
- // Net ayırım: pitch + rate farkı
- if(voiceSel.value==='kiz'){
-  u.voice=voices.find(v=>v.lang==='tr-TR')||null;
-  u.pitch=1.6;
-  u.rate=1.05;
- } else {
-  u.voice=voices.find(v=>v.lang==='tr-TR')||null;
-  u.pitch=0.7;
-  u.rate=0.95;
- }
- // mod etkisi
- if(mod.value==='sinirli') u.rate+=0.1;
- if(mod.value==='mutlu') u.pitch+=0.2;
  speechSynthesis.speak(u);
 }
 
