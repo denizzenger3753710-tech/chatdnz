@@ -23,6 +23,11 @@ footer{display:flex;gap:6px;padding:8px;background:#020617}
 footer input{flex:1;padding:10px;border-radius:6px;border:none}
 footer button{padding:10px;border-radius:6px;border:none;background:#2563eb;color:#fff}
 @media(max-width:768px){#wrap{flex-direction:column}#menu{width:100%;border-right:none;border-bottom:1px solid #1e293b}}
+#typing{padding:6px 12px;font-style:italic;opacity:.7;display:none}
+#logo{transition:transform .3s,color .3s}
+#logo:hover{transform:scale(1.1);color:#38bdf8}
+header{animation:pulse 2.5s infinite}
+@keyframes pulse{0%{opacity:.6}50%{opacity:1}100%{opacity:.6}}
 </style>
 </head>
 <body>
@@ -31,21 +36,26 @@ footer button{padding:10px;border-radius:6px;border:none;background:#2563eb;colo
 <div id="wrap">
  <div id="menu">
   <h3>Mod</h3>
-  <select id="mod">
-   <option value="normal">😐 Normal</option>
-   <option value="sinirli">😡 Sinirli</option>
-   <option value="mutlu">🙂 Mutlu</option>
-   <option value="uzgun">😢 Üzgün</option>
-  </select>
-  <label>Sinir Seviyesi</label>
-  <input type="range" id="sinir" min="0" max="100" value="30">
-  <button id="sesBtn">🔊 Ses Açık</button>
-  <button id="clearBtn">🧹 Sohbeti Temizle</button>
+<select id="mod">
+ <option value="normal">😐 Normal</option>
+ <option value="sinirli">😡 Sinirli</option>
+ <option value="mutlu">🙂 Mutlu</option>
+ <option value="uzgun">😢 Üzgün</option>
+</select>
+<label>Sinir Seviyesi</label>
+<input type="range" id="sinir" min="0" max="100" value="30">
+<label>Ses</label>
+<select id="voiceSel">
+ <option value="erkek">👨 Erkek</option>
+ <option value="kiz">👩 Kız</option>
+</select>
+<button id="sesBtn">🔊 Ses Açık</button>
+<button id="clearBtn">🧹 Sohbeti Temizle</button>
   <button id="exportBtn">💾 Sohbeti İndir</button>
  </div>
  <div id="chatWrap">
   <div id="sinirBar"></div>
-  <div id="chat"></div>
+  <div id="chat"></div><div id="typing">CHATDNZ yazıyor...</div>
   <footer>
    <input id="inp" placeholder="Yaz bakalım…">
    <button id="btn">Gönder</button>
@@ -61,6 +71,8 @@ const mod=document.getElementById('mod');
 const sinir=document.getElementById('sinir');
 const sinirBar=document.getElementById('sinirBar');
 const sesBtn=document.getElementById('sesBtn');
+const voiceSel=document.getElementById('voiceSel');
+const typing=document.getElementById('typing');
 const clearBtn=document.getElementById('clearBtn');
 const exportBtn=document.getElementById('exportBtn');
 let ses=true;
@@ -97,7 +109,21 @@ function zeka(m){
 
 function ekle(k,t){const d=document.createElement('div');d.className='msg '+k;d.textContent=t;chat.appendChild(d);chat.scrollTop=chat.scrollHeight}
 
-function konus(t){if(!ses||!('speechSynthesis'in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='tr-TR';u.pitch=mod.value==='sinirli'?0.7:mod.value==='mutlu'?1.3:1;u.rate=sinir.value>70?1.15:1;speechSynthesis.speak(u)}
+function konus(t){
+ if(!ses||!('speechSynthesis'in window))return;
+ speechSynthesis.cancel();
+ const u=new SpeechSynthesisUtterance(t);
+ u.lang='tr-TR';
+ const voices=speechSynthesis.getVoices();
+ if(voiceSel.value==='kiz'){
+  u.voice=voices.find(v=>v.lang==='tr-TR'&&v.name.toLowerCase().includes('female'))||voices.find(v=>v.lang==='tr-TR');
+ } else {
+  u.voice=voices.find(v=>v.lang==='tr-TR'&&v.name.toLowerCase().includes('male'))||voices.find(v=>v.lang==='tr-TR');
+ }
+ u.pitch=mod.value==='sinirli'?0.7:mod.value==='mutlu'?1.3:1;
+ u.rate=sinir.value>70?1.15:1;
+ speechSynthesis.speak(u);
+}
 
 // eski sohbeti yükle
 sohbet.forEach(x=>ekle(x.k,x.t));
@@ -108,18 +134,27 @@ btn.onclick=()=>{
  ekle('user','Sen: '+t);
  sohbet.push({k:'user',t:'Sen: '+t});
  inp.value='';
+ typing.style.display='block';
  setTimeout(()=>{
+  typing.style.display='none';
   const c=zeka(t);
   ekle('bot','CHATDNZ: '+c);
   sohbet.push({k:'bot',t:'CHATDNZ: '+c});
   localStorage.setItem('chatdnz_sohbet',JSON.stringify(sohbet));
   konus(c);
- },120);
+ },400);
 };
 
 inp.addEventListener('keydown',e=>{if(e.key==='Enter')btn.onclick()});
 
-sinir.oninput=()=>{sinirBar.style.width=sinir.value+'%';sinirBar.style.background=sinir.value>70?'#dc2626':sinir.value>40?'#facc15':'#16a34a'};
+sinir.oninput=()=>{
+ sinirBar.style.width=sinir.value+'%';
+ sinirBar.style.background=sinir.value>70?'#dc2626':sinir.value>40?'#facc15':'#16a34a';
+ if(mod.value==='sinirli') document.body.style.background='linear-gradient(135deg,#450a0a,#020617)';
+ if(mod.value==='mutlu') document.body.style.background='linear-gradient(135deg,#064e3b,#020617)';
+ if(mod.value==='uzgun') document.body.style.background='linear-gradient(135deg,#1e3a8a,#020617)';
+ if(mod.value==='normal') document.body.style.background='linear-gradient(135deg,#020617,#0f172a)';
+};
 
 sesBtn.onclick=()=>{ses=!ses;sesBtn.textContent=ses?'🔊 Ses Açık':'🔇 Ses Kapalı'};
 
@@ -134,7 +169,7 @@ clearBtn.onclick=()=>{
 
 exportBtn.onclick=()=>{
  if(sohbet.length===0){alert('Sohbet yok');return;}
- let text = sohbet.map(x => x.t).join("\\n");
+ let text = sohbet.map(x => x.t).join("\n");
  const blob=new Blob([text],{type:'text/plain'});
  const a=document.createElement('a');
  a.href=URL.createObjectURL(blob);
